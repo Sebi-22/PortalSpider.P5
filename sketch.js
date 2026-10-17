@@ -12,8 +12,8 @@ let portalNumero = 0;
 let portalTimer = 0;
 
 let visitantes = [
-  { portalX: 0.3, fondo: [10, 15, 40], luz: [255, 210, 120] },
-  { portalX: 0.7, fondo: [30, 12, 22], luz: [150, 220, 255] }
+  { portalX: 0.3, lugar: "callejon" },
+  { portalX: 0.7, lugar: "terraza" }
 ];
 
 let sparks = [];
@@ -25,7 +25,7 @@ function setup() {
 function draw() {
   strokeWeight(1);
   for (let y = 0; y < height; y++) {
-    //map funcion que toma un valor y lo mapea a un rango de colores
+    //map funcion (valor, valorMinimo, valorMaximo, nuevoValorMinimo, nuevoValorMaximo)
     let r = map(y, 0, height, 15, 35);
     let g = map(y, 0, height, 8, 20);
     let b = map(y, 0, height, 35, 65);
@@ -66,14 +66,16 @@ function draw() {
 
   let progreso = portalSize / portalTarget;
 
-  if (portalSize > 1) {
-    let v = visitantes[portalNumero - 1];
-    noStroke();
-    fill(v.fondo[0], v.fondo[1], v.fondo[2]);
-    circle(portalX, portalY, portalTarget * progreso);
-    fill(v.luz[0], v.luz[1], v.luz[2], 120);
-    circle(portalX + 40 * progreso, portalY - 30 * progreso, 30 * progreso);
-  }
+if (portalSize > 1) {
+  let v = visitantes[portalNumero - 1];
+  push();
+  noStroke();
+  beginClip();
+  circle(portalX, portalY, portalSize);
+  endClip();
+  dibujarLugar(v.lugar);
+  pop();
+}
 
   if (portalSize > 1) {
     dibujarAro(progreso);
@@ -101,6 +103,95 @@ function abrirPortal(x, y) {
   portalState = "abriendo";
 }
 
+function dibujarLugar(lugar) {
+  let tam = portalTarget;
+  let izq = portalX - tam / 2;
+  let arriba = portalY - tam / 2;
+
+  if (lugar === "callejon") {
+    for (let i = 0; i < tam; i++) {
+      let r = map(i, 0, tam, 8, 34);
+      let g = map(i, 0, tam, 12, 30);
+      let b = map(i, 0, tam, 18, 26);
+      stroke(r, g, b);
+      line(izq, arriba + i, izq + tam, arriba + i);
+    }
+    noStroke();
+
+    fill(12, 14, 20);
+    rect(izq + tam * 0.2, arriba + tam * 0.18, tam * 0.22, tam * 0.5);
+    rect(izq + tam * 0.55, arriba + tam * 0.25, tam * 0.2, tam * 0.43);
+
+    fill(16, 17, 22);
+    rect(izq, arriba, tam * 0.15, tam);
+    rect(izq + tam * 0.85, arriba, tam * 0.15, tam);
+
+    fill(90, 65, 30, 160);
+    rect(izq + tam * 0.04, arriba + tam * 0.5, tam * 0.07, tam * 0.2);
+
+    fill(24, 26, 32);
+    rect(izq, arriba + tam * 0.66, tam, tam);
+    fill(255, 225, 170, 35);
+    ellipse(izq + tam * 0.45, arriba + tam * 0.82, tam * 0.1, tam * 0.3);
+
+    fill(225, 230, 235, 35);
+    circle(izq + tam * 0.25, arriba + tam * 0.68, tam * 0.25);
+    circle(izq + tam * 0.33, arriba + tam * 0.6, tam * 0.18);
+    circle(izq + tam * 0.65, arriba + tam * 0.64, tam * 0.28);
+    circle(izq + tam * 0.72, arriba + tam * 0.55, tam * 0.18);
+
+    fill(255, 235, 190, 25);
+    circle(izq + tam * 0.45, arriba + tam * 0.1, tam * 0.4);
+    fill(255, 235, 190, 60);
+    circle(izq + tam * 0.45, arriba + tam * 0.1, tam * 0.22);
+    fill(255, 245, 210);
+    circle(izq + tam * 0.45, arriba + tam * 0.1, tam * 0.035);
+  } else if (lugar === "terraza") {
+    for (let i = 0; i < tam; i++) {
+      let r = map(i, 0, tam, 6, 24);
+      let g = map(i, 0, tam, 8, 30);
+      let b = map(i, 0, tam, 18, 52);
+      stroke(r, g, b);
+      line(izq, arriba + i, izq + tam, arriba + i);
+    }
+    noStroke();
+
+
+    fill(14, 18, 32);
+    for (let i = 0; i < 8; i++) {
+      let alto = tam * 0.12 + ((i * 53) % 40);
+      rect(izq + i * tam * 0.14, arriba + tam * 0.62 - alto, tam * 0.13, alto);
+    }
+
+    let cx = izq + tam * 0.2;
+    fill(32, 38, 62);
+    rect(cx - tam * 0.05, arriba + tam * 0.42, tam * 0.1, tam * 0.22);
+    rect(cx - tam * 0.035, arriba + tam * 0.32, tam * 0.07, tam * 0.1);
+    fill(220, 235, 255);
+    rect(cx - tam * 0.022, arriba + tam * 0.24, tam * 0.044, tam * 0.08);
+    rect(cx - tam * 0.008, arriba + tam * 0.15, tam * 0.016, tam * 0.09);
+    fill(200, 225, 255, 40);
+    circle(cx, arriba + tam * 0.24, tam * 0.16);
+
+    fill(28, 26, 34);
+    rect(izq, arriba + tam * 0.72, tam, tam);
+
+    stroke(12, 14, 22);
+    strokeWeight(3);
+    line(izq, arriba + tam * 0.62, izq + tam, arriba + tam * 0.62);
+    strokeWeight(2);
+    for (let x = 0; x <= tam; x += 20) {
+      line(izq + x, arriba + tam * 0.62, izq + x, arriba + tam * 0.72);
+    }
+    noStroke();
+
+    fill(255, 200, 120, 200);
+    circle(izq + tam * 0.5, arriba + tam * 0.05, tam * 0.03);
+    circle(izq + tam * 0.56, arriba + tam * 0.07, tam * 0.025);
+    circle(izq + tam * 0.44, arriba + tam * 0.07, tam * 0.025);
+  }
+}
+
 function dibujarAro(progreso) {
   let inicio = -half_pi;
   let fin = inicio + two_pi * progreso;
@@ -121,13 +212,11 @@ function dibujarAro(progreso) {
   strokeWeight(4);
   trazoAro(fin);
 
-  // chispas repartidas por la parte del aro que ya esta formada
   for (let i = 0; i < 8; i++) {
     let angulo = random(inicio, fin);
     crearChispa(portalX + cos(angulo) * radio, portalY + sin(angulo) * radio);
   }
 
-  // mas chispas en la punta mientras el aro se esta cerrando
   if (progreso < 0.99 && portalState === "abriendo") {
     for (let i = 0; i < 4; i++) {
       crearChispa(portalX + cos(fin) * radio, portalY + sin(fin) * radio);
@@ -143,7 +232,6 @@ function trazoAro(fin) {
   }
 }
 
-// crear una chispa nueva y guardarla en el array
 function crearChispa(x, y) {
   sparks.push({
     x: x,
@@ -172,7 +260,6 @@ function dibujarChispas() {
   }
 }
 
-// espacio: abre el siguiente portal, o reinicia la escena al terminar
 function keyPressed() {
   if (key === " ") {
     if (portalState === "cerrado") {
