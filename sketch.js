@@ -1,22 +1,26 @@
 // constantes de matematica 
-const half_pi = Math.PI / 2;
-const two_pi = Math.PI * 2;
+const medio_pi = Math.PI / 2;
+const dos_pi = Math.PI * 2;
 
 // variables del portal
-let portalSize = 0;
-let portalTarget = 260;
-let portalState = "cerrado";
+let portalTamano = 0;
+let portalObjetivo = 260;
+let portalEstado = "cerrado";
 let portalX = 0;
 let portalY = 0;
 let portalNumero = 0;
-let portalTimer = 0;
+let portalTemporizador = 0;
+
 
 let visitantes = [
-  { portalX: 0.3, lugar: "callejon" },
-  { portalX: 0.7, lugar: "terraza" }
+  { portalX: 0.3, lugar: "callejon", pies: 0.78, traje: [200, 30, 40], detalle: [30, 60, 160] },
+  { portalX: 0.7, lugar: "terraza", pies: 0.85, traje: [170, 25, 35], detalle: [20, 30, 90] }
 ];
 
-let sparks = [];
+// tamano del personaje
+const personajeEscala = 0.6;
+
+let chispas = [];
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -25,59 +29,60 @@ function setup() {
 function draw() {
   strokeWeight(1);
   for (let y = 0; y < height; y++) {
-    //map funcion (valor, valorMinimo, valorMaximo, nuevoValorMinimo, nuevoValorMaximo)
-    let r = map(y, 0, height, 15, 35);
-    let g = map(y, 0, height, 8, 20);
-    let b = map(y, 0, height, 35, 65);
+    //map funcion que toma un valor y lo mapea a un rango de colores
+    let rojo = map(y, 0, height, 15, 35);
+    let verde = map(y, 0, height, 8, 20);
+    let azul = map(y, 0, height, 35, 65);
 
-    stroke(r, g, b);
+    stroke(rojo, verde, azul);
     line(0, y, width, y);
   }
 
-  let floorY = height * 0.85;
+  let pisoY = height * 0.85;
   stroke(10, 8, 15);
   strokeWeight(3);
-  line(0, floorY, width, floorY);
+  line(0, pisoY, width, pisoY);
 
   // estados del portal
-  if (portalState === "abriendo") {
-    portalSize = 0.06 * portalTarget + 0.94 * portalSize;
-    if (portalSize >= portalTarget - 2) {
-      portalSize = portalTarget;
-      portalState = "abierto";
-      portalTimer = 0;
+  if (portalEstado === "abriendo") {
+    portalTamano = 0.06 * portalObjetivo + 0.94 * portalTamano;
+    if (portalTamano >= portalObjetivo - 2) {
+      portalTamano = portalObjetivo;
+      portalEstado = "abierto";
+      portalTemporizador = 0;
     }
-  } else if (portalState === "abierto") {
-    portalTimer++;
-    if (portalTimer === 220) {
-      portalState = "cerrando";
+  } else if (portalEstado === "abierto") {
+    portalTemporizador++;
+    if (portalTemporizador === 220) {
+      portalEstado = "cerrando";
     }
-  } else if (portalState === "cerrando") {
-    portalSize = 0.85 * portalSize;
-    if (portalSize < 2) {
-      portalSize = 0;
+  } else if (portalEstado === "cerrando") {
+    portalTamano = 0.85 * portalTamano;
+    if (portalTamano < 2) {
+      portalTamano = 0;
       if (portalNumero === visitantes.length) {
-        portalState = "fin";
+        portalEstado = "fin";
       } else {
-        portalState = "cerrado";
+        portalEstado = "cerrado";
       }
     }
   }
 
-  let progreso = portalSize / portalTarget;
+  let progreso = portalTamano / portalObjetivo;
 
-if (portalSize > 1) {
-  let v = visitantes[portalNumero - 1];
+if (portalTamano > 1) {
+  let visitante = visitantes[portalNumero - 1];
   push();
   noStroke();
   beginClip();
-  circle(portalX, portalY, portalSize);
+  circle(portalX, portalY, portalTamano);
   endClip();
-  dibujarLugar(v.lugar);
+  dibujarLugar(visitante.lugar);
+  dibujarPersonaje(portalX, portalY - portalObjetivo / 2 + portalObjetivo * visitante.pies, personajeEscala, visitante.traje, visitante.detalle);
   pop();
 }
 
-  if (portalSize > 1) {
+  if (portalTamano > 1) {
     dibujarAro(progreso);
   }
 
@@ -86,34 +91,52 @@ if (portalSize > 1) {
   noStroke();
   fill(255);
   textSize(12);
-  if (portalState === "cerrado") {
+  if (portalEstado === "cerrado") {
     text("espacio: abrir el portal " + (portalNumero + 1) + " de " + visitantes.length, 20, 30);
-  } else if (portalState === "fin") {
+  } else if (portalEstado === "fin") {
     text("espacio: empezar de nuevo", 20, 30);
   } else {
-    text("portal " + portalNumero + ": " + portalState, 20, 30);
+    text("portal " + portalNumero + ": " + portalEstado, 20, 30);
   }
 }
 
 function abrirPortal(x, y) {
   portalNumero++;
-  portalSize = 0;
+  portalTamano = 0;
   portalX = x;
   portalY = y;
-  portalState = "abriendo";
+  portalEstado = "abriendo";
+}
+
+function dibujarPersonaje(x, piesY, escala, traje, detalle) {
+  push();
+  translate(x, piesY - 90 * escala);
+  scale(escala);
+  noStroke();
+
+  fill(traje[0], traje[1], traje[2]);
+  rect(-18, -10, 36, 60);
+  circle(0, -28, 34);
+
+  fill(detalle[0], detalle[1], detalle[2]);
+  rect(-34, -8, 14, 40);
+  rect(20, -8, 14, 40);
+  rect(-16, 50, 14, 40);
+  rect(2, 50, 14, 40);
+  pop();
 }
 
 function dibujarLugar(lugar) {
-  let tam = portalTarget;
+  let tam = portalObjetivo;
   let izq = portalX - tam / 2;
   let arriba = portalY - tam / 2;
 
   if (lugar === "callejon") {
     for (let i = 0; i < tam; i++) {
-      let r = map(i, 0, tam, 8, 34);
-      let g = map(i, 0, tam, 12, 30);
-      let b = map(i, 0, tam, 18, 26);
-      stroke(r, g, b);
+      let rojo = map(i, 0, tam, 8, 34);
+      let verde = map(i, 0, tam, 12, 30);
+      let azul = map(i, 0, tam, 18, 26);
+      stroke(rojo, verde, azul);
       line(izq, arriba + i, izq + tam, arriba + i);
     }
     noStroke();
@@ -148,30 +171,30 @@ function dibujarLugar(lugar) {
     circle(izq + tam * 0.45, arriba + tam * 0.1, tam * 0.035);
   } else if (lugar === "terraza") {
     for (let i = 0; i < tam; i++) {
-      let r = map(i, 0, tam, 6, 24);
-      let g = map(i, 0, tam, 8, 30);
-      let b = map(i, 0, tam, 18, 52);
-      stroke(r, g, b);
+      let rojo = map(i, 0, tam, 6, 24);
+      let verde = map(i, 0, tam, 8, 30);
+      let azul = map(i, 0, tam, 18, 52);
+      stroke(rojo, verde, azul);
       line(izq, arriba + i, izq + tam, arriba + i);
     }
     noStroke();
 
-
+   
     fill(14, 18, 32);
     for (let i = 0; i < 8; i++) {
       let alto = tam * 0.12 + ((i * 53) % 40);
       rect(izq + i * tam * 0.14, arriba + tam * 0.62 - alto, tam * 0.13, alto);
     }
 
-    let cx = izq + tam * 0.2;
+    let centroX = izq + tam * 0.2;
     fill(32, 38, 62);
-    rect(cx - tam * 0.05, arriba + tam * 0.42, tam * 0.1, tam * 0.22);
-    rect(cx - tam * 0.035, arriba + tam * 0.32, tam * 0.07, tam * 0.1);
+    rect(centroX - tam * 0.05, arriba + tam * 0.42, tam * 0.1, tam * 0.22);
+    rect(centroX - tam * 0.035, arriba + tam * 0.32, tam * 0.07, tam * 0.1);
     fill(220, 235, 255);
-    rect(cx - tam * 0.022, arriba + tam * 0.24, tam * 0.044, tam * 0.08);
-    rect(cx - tam * 0.008, arriba + tam * 0.15, tam * 0.016, tam * 0.09);
+    rect(centroX - tam * 0.022, arriba + tam * 0.24, tam * 0.044, tam * 0.08);
+    rect(centroX - tam * 0.008, arriba + tam * 0.15, tam * 0.016, tam * 0.09);
     fill(200, 225, 255, 40);
-    circle(cx, arriba + tam * 0.24, tam * 0.16);
+    circle(centroX, arriba + tam * 0.24, tam * 0.16);
 
     fill(28, 26, 34);
     rect(izq, arriba + tam * 0.72, tam, tam);
@@ -193,13 +216,13 @@ function dibujarLugar(lugar) {
 }
 
 function dibujarAro(progreso) {
-  let inicio = -half_pi;
-  let fin = inicio + two_pi * progreso;
-  let radio = portalTarget / 2;
+  let inicio = -medio_pi;
+  let fin = inicio + dos_pi * progreso;
+  let radio = portalObjetivo / 2;
 
   noStroke();
   fill(255, 140, 20, 40 * progreso);
-  circle(portalX, portalY, portalTarget * progreso);
+  circle(portalX, portalY, portalObjetivo * progreso);
 
   noFill();
   stroke(255, 100, 0, 45);
@@ -217,7 +240,7 @@ function dibujarAro(progreso) {
     crearChispa(portalX + cos(angulo) * radio, portalY + sin(angulo) * radio);
   }
 
-  if (progreso < 0.99 && portalState === "abriendo") {
+  if (progreso < 0.99 && portalEstado === "abriendo") {
     for (let i = 0; i < 4; i++) {
       crearChispa(portalX + cos(fin) * radio, portalY + sin(fin) * radio);
     }
@@ -225,50 +248,51 @@ function dibujarAro(progreso) {
 }
 
 function trazoAro(fin) {
-  if (fin - -half_pi >= two_pi - 0.001) {
-    circle(portalX, portalY, portalTarget);
+  if (fin - -medio_pi >= dos_pi - 0.001) {
+    circle(portalX, portalY, portalObjetivo);
   } else {
-    arc(portalX, portalY, portalTarget, portalTarget, -half_pi, fin);
+    arc(portalX, portalY, portalObjetivo, portalObjetivo, -medio_pi, fin);
   }
 }
 
+// crear una chispa nueva y guardarla en el array
 function crearChispa(x, y) {
-  sparks.push({
+  chispas.push({
     x: x,
     y: y,
     vx: random(-1.5, 1.5),
     vy: random(-1.5, 1.5),
-    life: 255,
-    size: random(2, 6),
+    vida: 255,
+    tamano: random(2, 6),
   });
 }
 
 function dibujarChispas() {
   noStroke();
-  for (let i = sparks.length - 1; i >= 0; i--) {
-    let s = sparks[i];
-    s.x += s.vx;
-    s.y += s.vy;
-    s.vy += 0.03;
-    s.life -= 5;
-    fill(255, random(120, 200), 30, s.life);
-    circle(s.x, s.y, s.size);
+  for (let i = chispas.length - 1; i >= 0; i--) {
+    let chispa = chispas[i];
+    chispa.x += chispa.vx;
+    chispa.y += chispa.vy;
+    chispa.vy += 0.03;
+    chispa.vida -= 5;
+    fill(255, random(120, 200), 30, chispa.vida);
+    circle(chispa.x, chispa.y, chispa.tamano);
     // splice elimina un elemento del array
-    if (s.life <= 0) {
-      sparks.splice(i, 1);
+    if (chispa.vida <= 0) {
+      chispas.splice(i, 1);
     }
   }
 }
 
 function keyPressed() {
   if (key === " ") {
-    if (portalState === "cerrado") {
-      let v = visitantes[portalNumero];
-      abrirPortal(width * v.portalX, height * 0.45);
-    } else if (portalState === "fin") {
+    if (portalEstado === "cerrado") {
+      let visitante = visitantes[portalNumero];
+      abrirPortal(width * visitante.portalX, height * 0.45);
+    } else if (portalEstado === "fin") {
       portalNumero = 0;
-      sparks = [];
-      portalState = "cerrado";
+      chispas = [];
+      portalEstado = "cerrado";
     }
   }
 }
