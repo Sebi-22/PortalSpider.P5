@@ -4,44 +4,34 @@ const dos_pi = Math.PI * 2;
 
 // variables del portal
 let portalTamano = 0;
-let portalObjetivo = 260;
+let portalObjetivo = 210;
 let portalEstado = "cerrado";
 let portalX = 0;
 let portalY = 0;
 let portalNumero = 0;
 let portalTemporizador = 0;
 
-
 let visitantes = [
-  { portalX: 0.3, lugar: "callejon", pies: 0.78, traje: [200, 30, 40], detalle: [30, 60, 160] },
-  { portalX: 0.7, lugar: "terraza", pies: 0.85, traje: [170, 25, 35], detalle: [20, 30, 90] }
+  { portalX: 0.3, lugar: "callejon", pies: 0.92, destino: 0.42, piel: [205, 165, 140], traje: [175, 35, 40], detalle: [28, 38, 95] },
+  { portalX: 0.7, lugar: "sala", pies: 0.92, destino: 0.58, piel: [205, 165, 140], traje: [85, 72, 52], detalle: [38, 38, 46], camisa: [110, 125, 118] }
 ];
 
-// tamano del personaje
-const personajeEscala = 0.6;
+const personajeEscala = 1.05;
+const personajeEscalaFinal = 1.25;
 
 let chispas = [];
+let personajes = [];
+
+let pisoY = 0;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+  pisoY = height * 0.78;
 }
 
 function draw() {
-  strokeWeight(1);
-  for (let y = 0; y < height; y++) {
-    //map funcion que toma un valor y lo mapea a un rango de colores
-    let rojo = map(y, 0, height, 15, 35);
-    let verde = map(y, 0, height, 8, 20);
-    let azul = map(y, 0, height, 35, 65);
-
-    stroke(rojo, verde, azul);
-    line(0, y, width, y);
-  }
-
-  let pisoY = height * 0.85;
-  stroke(10, 8, 15);
-  strokeWeight(3);
-  line(0, pisoY, width, pisoY);
+  pisoY = height * 0.78;
+  dibujarSala();
 
   // estados del portal
   if (portalEstado === "abriendo") {
@@ -53,6 +43,9 @@ function draw() {
     }
   } else if (portalEstado === "abierto") {
     portalTemporizador++;
+    if (portalTemporizador === 50) {
+      personajes[personajes.length - 1].saliendo = true;
+    }
     if (portalTemporizador === 220) {
       portalEstado = "cerrando";
     }
@@ -78,9 +71,18 @@ if (portalTamano > 1) {
   circle(portalX, portalY, portalTamano);
   endClip();
   dibujarLugar(visitante.lugar);
-  dibujarPersonaje(portalX, portalY - portalObjetivo / 2 + portalObjetivo * visitante.pies, personajeEscala, visitante.traje, visitante.detalle);
+  let actual = personajes[personajes.length - 1];
+  if (!actual.saliendo) {
+    dibujarPersonaje(actual);
+  }
   pop();
 }
+  for (let personaje of personajes) {
+    if (personaje.saliendo) {
+      moverPersonaje(personaje);
+      dibujarPersonaje(personaje);
+    }
+  }
 
   if (portalTamano > 1) {
     dibujarAro(progreso);
@@ -106,25 +108,108 @@ function abrirPortal(x, y) {
   portalX = x;
   portalY = y;
   portalEstado = "abriendo";
+
+  let visitante = visitantes[portalNumero - 1];
+  personajes.push({
+    x: x,
+    y: y - portalObjetivo / 2 + portalObjetivo * visitante.pies,
+    escala: personajeEscala,
+    piel: visitante.piel,
+    traje: visitante.traje,
+    detalle: visitante.detalle,
+    camisa: visitante.camisa,
+    destinoX: width * visitante.destino,
+    destinoY: pisoY + 30,
+    saliendo: false
+  });
 }
 
-function dibujarPersonaje(x, piesY, escala, traje, detalle) {
-  push();
-  translate(x, piesY - 90 * escala);
-  scale(escala);
+function dibujarSala() {
+  strokeWeight(1);
+  for (let y = 0; y < pisoY; y++) {
+    let rojo = map(y, 0, pisoY, 55, 125);
+    let verde = map(y, 0, pisoY, 34, 78);
+    let azul = map(y, 0, pisoY, 20, 42);
+    stroke(rojo, verde, azul);
+    line(0, y, width, y);
+  }
+
+  for (let y = pisoY; y < height; y++) {
+    let rojo = map(y, pisoY, height, 78, 38);
+    let verde = map(y, pisoY, height, 50, 24);
+    let azul = map(y, pisoY, height, 30, 15);
+    stroke(rojo, verde, azul);
+    line(0, y, width, y);
+  }
   noStroke();
 
-  fill(traje[0], traje[1], traje[2]);
-  rect(-18, -10, 36, 60);
-  circle(0, -28, 34);
+  fill(40, 55, 85);
+  rect(width * 0.05, height * 0.14, width * 0.09, pisoY - height * 0.24);
+  fill(100, 45, 35);
+  rect(width * 0.03, height * 0.1, width * 0.025, pisoY - height * 0.12);
+  rect(width * 0.135, height * 0.1, width * 0.025, pisoY - height * 0.12);
 
-  fill(detalle[0], detalle[1], detalle[2]);
+  fill(45, 28, 18);
+  rect(0, pisoY - 6, width, 6);
+
+  let lamparaX = width * 0.5;
+  fill(70, 45, 30);
+  rect(lamparaX - 45, pisoY - 70, 90, 70);
+  fill(255, 200, 110, 28);
+  circle(lamparaX, pisoY - 125, 240);
+  fill(255, 200, 110, 55);
+  circle(lamparaX, pisoY - 125, 140);
+  fill(60, 40, 25);
+  rect(lamparaX - 3, pisoY - 100, 6, 30);
+  fill(238, 178, 92);
+  quad(lamparaX - 22, pisoY - 100, lamparaX + 22, pisoY - 100, lamparaX + 34, pisoY - 148, lamparaX - 34, pisoY - 148);
+
+  let estanteX = width * 0.88;
+  let estanteAncho = width * 0.09;
+  let estanteAlto = pisoY - height * 0.18;
+  fill(110, 66, 34);
+  rect(estanteX, height * 0.18, estanteAncho, estanteAlto);
+  fill(70, 42, 22);
+  for (let i = 1; i < 4; i++) {
+    rect(estanteX, height * 0.18 + i * estanteAlto / 4 - 3, estanteAncho, 6);
+  }
+  fill(228, 130, 40);
+  circle(estanteX + estanteAncho * 0.3, height * 0.18 + estanteAlto / 4 - 14, 22);
+  circle(estanteX + estanteAncho * 0.7, height * 0.18 + estanteAlto / 2 - 12, 18);
+  circle(estanteX + estanteAncho * 0.4, height * 0.18 + estanteAlto * 3 / 4 - 14, 20);
+}
+
+function dibujarPersonaje(personaje) {
+  push();
+  translate(personaje.x, personaje.y - 90 * personaje.escala);
+  scale(personaje.escala);
+  noStroke();
+
+  fill(personaje.traje[0], personaje.traje[1], personaje.traje[2]);
+  rect(-18, -10, 36, 60);
   rect(-34, -8, 14, 40);
   rect(20, -8, 14, 40);
+
+  if (personaje.camisa) {
+    fill(personaje.camisa[0], personaje.camisa[1], personaje.camisa[2]);
+    rect(-7, -10, 14, 60);
+  }
+
+  fill(personaje.detalle[0], personaje.detalle[1], personaje.detalle[2]);
   rect(-16, 50, 14, 40);
   rect(2, 50, 14, 40);
+
+  fill(personaje.piel[0], personaje.piel[1], personaje.piel[2]);
+  circle(0, -28, 34);
   pop();
 }
+
+function moverPersonaje(personaje) {
+  personaje.x = 0.04 * personaje.destinoX + 0.96 * personaje.x;
+  personaje.y = 0.04 * personaje.destinoY + 0.96 * personaje.y;
+  personaje.escala = 0.04 * personajeEscalaFinal + 0.96 * personaje.escala;
+}
+
 
 function dibujarLugar(lugar) {
   let tam = portalObjetivo;
@@ -140,6 +225,7 @@ function dibujarLugar(lugar) {
       line(izq, arriba + i, izq + tam, arriba + i);
     }
     noStroke();
+
 
     fill(12, 14, 20);
     rect(izq + tam * 0.2, arriba + tam * 0.18, tam * 0.22, tam * 0.5);
@@ -169,44 +255,46 @@ function dibujarLugar(lugar) {
     circle(izq + tam * 0.45, arriba + tam * 0.1, tam * 0.22);
     fill(255, 245, 210);
     circle(izq + tam * 0.45, arriba + tam * 0.1, tam * 0.035);
-  } else if (lugar === "terraza") {
+  } else if (lugar === "sala") {
     for (let i = 0; i < tam; i++) {
-      let rojo = map(i, 0, tam, 6, 24);
-      let verde = map(i, 0, tam, 8, 30);
-      let azul = map(i, 0, tam, 18, 52);
+      let rojo = map(i, 0, tam, 10, 26);
+      let verde = map(i, 0, tam, 10, 20);
+      let azul = map(i, 0, tam, 18, 18);
       stroke(rojo, verde, azul);
       line(izq, arriba + i, izq + tam, arriba + i);
     }
     noStroke();
 
-   
-    fill(14, 18, 32);
-    for (let i = 0; i < 8; i++) {
-      let alto = tam * 0.12 + ((i * 53) % 40);
-      rect(izq + i * tam * 0.14, arriba + tam * 0.62 - alto, tam * 0.13, alto);
+    fill(22, 32, 58);
+    rect(izq + tam * 0.1, arriba + tam * 0.2, tam * 0.32, tam * 0.45);
+
+
+    fill(14, 18, 34);
+    for (let i = 0; i < 4; i++) {
+      let alto = tam * 0.08 + ((i * 53) % 25);
+      rect(izq + tam * 0.1 + i * tam * 0.08, arriba + tam * 0.65 - alto, tam * 0.07, alto);
     }
 
     let centroX = izq + tam * 0.2;
     fill(32, 38, 62);
-    rect(centroX - tam * 0.05, arriba + tam * 0.42, tam * 0.1, tam * 0.22);
-    rect(centroX - tam * 0.035, arriba + tam * 0.32, tam * 0.07, tam * 0.1);
+    rect(centroX - tam * 0.04, arriba + tam * 0.45, tam * 0.08, tam * 0.2);
+    rect(centroX - tam * 0.03, arriba + tam * 0.37, tam * 0.06, tam * 0.08);
     fill(220, 235, 255);
-    rect(centroX - tam * 0.022, arriba + tam * 0.24, tam * 0.044, tam * 0.08);
-    rect(centroX - tam * 0.008, arriba + tam * 0.15, tam * 0.016, tam * 0.09);
+    rect(centroX - tam * 0.02, arriba + tam * 0.29, tam * 0.04, tam * 0.08);
+    rect(centroX - tam * 0.007, arriba + tam * 0.22, tam * 0.014, tam * 0.07);
     fill(200, 225, 255, 40);
-    circle(centroX, arriba + tam * 0.24, tam * 0.16);
+    circle(centroX, arriba + tam * 0.3, tam * 0.16);
 
-    fill(28, 26, 34);
-    rect(izq, arriba + tam * 0.72, tam, tam);
-
-    stroke(12, 14, 22);
+    stroke(10, 10, 14);
     strokeWeight(3);
-    line(izq, arriba + tam * 0.62, izq + tam, arriba + tam * 0.62);
-    strokeWeight(2);
-    for (let x = 0; x <= tam; x += 20) {
-      line(izq + x, arriba + tam * 0.62, izq + x, arriba + tam * 0.72);
-    }
+    line(izq + tam * 0.26, arriba + tam * 0.2, izq + tam * 0.26, arriba + tam * 0.65);
+    line(izq + tam * 0.1, arriba + tam * 0.42, izq + tam * 0.42, arriba + tam * 0.42);
     noStroke();
+
+    fill(26, 20, 18);
+    rect(izq, arriba + tam * 0.72, tam, tam);
+    fill(30, 22, 18);
+    rect(izq + tam * 0.62, arriba + tam * 0.5, tam * 0.3, tam * 0.3);
 
     fill(255, 200, 120, 200);
     circle(izq + tam * 0.5, arriba + tam * 0.05, tam * 0.03);
@@ -240,6 +328,7 @@ function dibujarAro(progreso) {
     crearChispa(portalX + cos(angulo) * radio, portalY + sin(angulo) * radio);
   }
 
+
   if (progreso < 0.99 && portalEstado === "abriendo") {
     for (let i = 0; i < 4; i++) {
       crearChispa(portalX + cos(fin) * radio, portalY + sin(fin) * radio);
@@ -255,7 +344,7 @@ function trazoAro(fin) {
   }
 }
 
-// crear una chispa nueva y guardarla en el array
+// crear una chispa nueva 
 function crearChispa(x, y) {
   chispas.push({
     x: x,
@@ -284,14 +373,16 @@ function dibujarChispas() {
   }
 }
 
+// espacio: abre el siguiente portal, o reinicia la escena al terminar
 function keyPressed() {
   if (key === " ") {
     if (portalEstado === "cerrado") {
       let visitante = visitantes[portalNumero];
-      abrirPortal(width * visitante.portalX, height * 0.45);
+      abrirPortal(width * visitante.portalX, pisoY - portalObjetivo / 2 + 8);
     } else if (portalEstado === "fin") {
       portalNumero = 0;
       chispas = [];
+      personajes = [];
       portalEstado = "cerrado";
     }
   }
