@@ -1,8 +1,8 @@
-// constantes de matematica
+// constantes de matematica (dos pi son 360 ,Math.PI es 180, medio pi es 90)
 const medio_pi = Math.PI / 2;
 const dos_pi = Math.PI * 2;
 
-// variables del portal
+// variables del portal 
 let portalTamano = 0;
 let portalObjetivo = 210;
 let portalEstado = "cerrado";
@@ -55,6 +55,7 @@ function draw() {
 
   // estados del portal
   if (portalEstado === "abriendo") {
+    // 0.06 es velocidad y 0.94 segundos en los que abre el protal)
     portalTamano = 0.06 * portalObjetivo + 0.94 * portalTamano;
     if (portalTamano >= portalObjetivo - 2) {
       portalTamano = portalObjetivo;
@@ -70,6 +71,7 @@ function draw() {
       portalEstado = "cerrando";
     }
   } else if (portalEstado === "cerrando") {
+    // 0.85 es velocidad 
     portalTamano = 0.85 * portalTamano;
     if (portalTamano < 2) {
       portalTamano = 0;
@@ -80,7 +82,7 @@ function draw() {
       }
     }
   }
-
+  // Progeso del Portal
   let progreso = portalTamano / portalObjetivo;
 
   if (portalTamano > 1) {
@@ -97,12 +99,14 @@ function draw() {
     circle(portalX, portalY, portalTamano);
     endClip();
     dibujarLugar(visitante.lugar);
+    // -1 es para hacer al perosnaje saliendo del portal
     let actual = personajes[personajes.length - 1];
     if (!actual.saliendo) {
       dibujarPersonaje(actual);
     }
     pop();
   }
+  // of sirve en el for para reccorrer el array
   for (let personaje of personajes) {
     if (personaje.saliendo) {
       moverPersonaje(personaje);
@@ -142,8 +146,10 @@ function draw() {
       30,
     );
   } else if (portalEstado === "fin") {
+    // 20 es izquierda y 30 altura
     text("espacio: empezar de nuevo", 20, 30);
   } else {
+    // 20 es izquierda y 30 altura
     text("portal " + portalNumero + ": " + portalEstado, 20, 30);
   }
 }
@@ -172,6 +178,7 @@ function abrirPortal(x, y) {
 
 function dibujarSala() {
   strokeWeight(1);
+  // Fondo
   for (let y = 0; y < pisoY; y++) {
     // map (valor, valorMinimo, valorMaximo, nuevoMinimo, nuevoMaximo)
     let rojo = map(y, 0, pisoY, 55, 125);
@@ -180,7 +187,7 @@ function dibujarSala() {
     stroke(rojo, verde, azul);
     line(0, y, width, y);
   }
-
+  // Piso
   for (let y = pisoY; y < height; y++) {
     let rojo = map(y, pisoY, height, 78, 38);
     let verde = map(y, pisoY, height, 50, 24);
@@ -189,16 +196,17 @@ function dibujarSala() {
     line(0, y, width, y);
   }
   noStroke();
-
+  // Muebles 
   fill(40, 55, 85);
   rect(width * 0.05, height * 0.14, width * 0.09, pisoY - height * 0.24);
   fill(100, 45, 35);
   rect(width * 0.03, height * 0.1, width * 0.025, pisoY - height * 0.12);
   rect(width * 0.135, height * 0.1, width * 0.025, pisoY - height * 0.12);
-
+  // Piso
   fill(45, 28, 18);
   rect(0, pisoY - 6, width, 6);
 
+  // Lampara
   let lamparaX = width * 0.5;
   fill(70, 45, 30);
   rect(lamparaX - 45, pisoY - 70, 90, 70);
@@ -219,7 +227,7 @@ function dibujarSala() {
     lamparaX - 34,
     pisoY - 148,
   );
-
+   // Estantes
   let estanteX = width * 0.88;
   let estanteAncho = width * 0.09;
   let estanteAlto = pisoY - height * 0.18;
@@ -246,43 +254,46 @@ function dibujarSala() {
     20,
   );
 }
-
+ // Personajes en pantalla
 function dibujarPersonaje(personaje) {
   push();
+  // translate (x, y , - 90 (que 90 es altura de personaje)
   translate(personaje.x, personaje.y - 90 * personaje.escala);
   scale(personaje.escala);
   noStroke();
-
+  // dibujar pies
   fill(personaje.traje[0], personaje.traje[1], personaje.traje[2]);
   rect(-18, -10, 36, 60);
   rect(-34, -8, 14, 40);
   rect(20, -8, 14, 40);
-
+  // dibujar torso
   if (personaje.camisa) {
     fill(personaje.camisa[0], personaje.camisa[1], personaje.camisa[2]);
     rect(-7, -10, 14, 60);
   }
-
+   // dibujar brazos
   fill(personaje.detalle[0], personaje.detalle[1], personaje.detalle[2]);
   rect(-16, 50, 14, 40);
   rect(2, 50, 14, 40);
-
+  // dibujar cabeza
   fill(personaje.piel[0], personaje.piel[1], personaje.piel[2]);
   circle(0, -28, 34);
   pop();
 }
-
+ // movimiento del personaje 
 function moverPersonaje(personaje) {
+  // 0.04 es velocidad y 0.96  es suavizado
   personaje.x = 0.04 * personaje.destinoX + 0.96 * personaje.x;
   personaje.y = 0.04 * personaje.destinoY + 0.96 * personaje.y;
   personaje.escala = 0.04 * personajeEscalaFinal + 0.96 * personaje.escala;
 }
-
+// Lugar donde aparecen los perosnajes 
 function dibujarLugar(lugar) {
   let tam = portalObjetivo;
   let izq = portalX - tam / 2;
   let arriba = portalY - tam / 2;
 
+  // Lugar 
   if (lugar === "callejon") {
     for (let i = 0; i < tam; i++) {
       let rojo = map(i, 0, tam, 8, 34);
@@ -292,36 +303,37 @@ function dibujarLugar(lugar) {
       line(izq, arriba + i, izq + tam, arriba + i);
     }
     noStroke();
-
+    // Edificios 
     fill(12, 14, 20);
     rect(izq + tam * 0.2, arriba + tam * 0.18, tam * 0.22, tam * 0.5);
     rect(izq + tam * 0.55, arriba + tam * 0.25, tam * 0.2, tam * 0.43);
-
+    // Ventanas
     fill(16, 17, 22);
     rect(izq, arriba, tam * 0.15, tam);
     rect(izq + tam * 0.85, arriba, tam * 0.15, tam);
-
+    // Puertas
     fill(90, 65, 30, 160);
     rect(izq + tam * 0.04, arriba + tam * 0.5, tam * 0.07, tam * 0.2);
-
+    // Puertas
     fill(24, 26, 32);
     rect(izq, arriba + tam * 0.66, tam, tam);
     fill(255, 225, 170, 35);
     ellipse(izq + tam * 0.45, arriba + tam * 0.82, tam * 0.1, tam * 0.3);
-
+    // Nubes
     fill(225, 230, 235, 35);
     circle(izq + tam * 0.25, arriba + tam * 0.68, tam * 0.25);
     circle(izq + tam * 0.33, arriba + tam * 0.6, tam * 0.18);
     circle(izq + tam * 0.65, arriba + tam * 0.64, tam * 0.28);
     circle(izq + tam * 0.72, arriba + tam * 0.55, tam * 0.18);
-
+    // Luna
     fill(255, 235, 190, 25);
     circle(izq + tam * 0.45, arriba + tam * 0.1, tam * 0.4);
     fill(255, 235, 190, 60);
     circle(izq + tam * 0.45, arriba + tam * 0.1, tam * 0.22);
     fill(255, 245, 210);
     circle(izq + tam * 0.45, arriba + tam * 0.1, tam * 0.035);
-  } else if (lugar === "sala") {
+  } // Sala 
+  else if (lugar === "sala") {
     for (let i = 0; i < tam; i++) {
       let rojo = map(i, 0, tam, 10, 26);
       let verde = map(i, 0, tam, 10, 20);
@@ -330,10 +342,10 @@ function dibujarLugar(lugar) {
       line(izq, arriba + i, izq + tam, arriba + i);
     }
     noStroke();
-
+    // Muebles
     fill(22, 32, 58);
     rect(izq + tam * 0.1, arriba + tam * 0.2, tam * 0.32, tam * 0.45);
-
+    // Libros
     fill(14, 18, 34);
     for (let i = 0; i < 4; i++) {
       let alto = tam * 0.08 + ((i * 53) % 25);
@@ -344,7 +356,7 @@ function dibujarLugar(lugar) {
         alto,
       );
     }
-
+    // Ventana
     let centroX = izq + tam * 0.2;
     fill(32, 38, 62);
     rect(centroX - tam * 0.04, arriba + tam * 0.45, tam * 0.08, tam * 0.2);
@@ -354,7 +366,7 @@ function dibujarLugar(lugar) {
     rect(centroX - tam * 0.007, arriba + tam * 0.22, tam * 0.014, tam * 0.07);
     fill(200, 225, 255, 40);
     circle(centroX, arriba + tam * 0.3, tam * 0.16);
-
+    // Lampara
     stroke(10, 10, 14);
     strokeWeight(3);
     line(
@@ -370,28 +382,28 @@ function dibujarLugar(lugar) {
       arriba + tam * 0.42,
     );
     noStroke();
-
+    // Lampara
     fill(26, 20, 18);
     rect(izq, arriba + tam * 0.72, tam, tam);
     fill(30, 22, 18);
     rect(izq + tam * 0.62, arriba + tam * 0.5, tam * 0.3, tam * 0.3);
-
+    // Bomnilla 
     fill(255, 200, 120, 200);
     circle(izq + tam * 0.5, arriba + tam * 0.05, tam * 0.03);
     circle(izq + tam * 0.56, arriba + tam * 0.07, tam * 0.025);
     circle(izq + tam * 0.44, arriba + tam * 0.07, tam * 0.025);
   }
 }
-
+// Aros de los portales
 function dibujarAro(progreso) {
   let inicio = -medio_pi;
   let fin = inicio + dos_pi * progreso;
   let radio = portalTamano / 2;
-
+  // Portal
   noStroke();
   fill(255, 140, 20, 40 * progreso);
   circle(portalX, portalY, portalTamano);
-
+  // Aro del portal
   noFill();
   stroke(255, 100, 0, 45);
   strokeWeight(26);
@@ -402,20 +414,22 @@ function dibujarAro(progreso) {
   stroke(255, 235, 160);
   strokeWeight(4);
   trazoAro(fin);
-
+  // Chispas del portal
   for (let i = 0; i < 8; i++) {
     let angulo = random(inicio, fin);
+    // cos (coseno formula es (angulo)*radio) y sin (Seno formula es (angulo)*radio)
     crearChispa(portalX + cos(angulo) * radio, portalY + sin(angulo) * radio);
   }
-
+ // 0.99 para terminar de dibujar las chispas (Tiempo)
   if (progreso < 0.99 && portalEstado === "abriendo") {
     for (let i = 0; i < 4; i++) {
       crearChispa(portalX + cos(fin) * radio, portalY + sin(fin) * radio);
     }
   }
 }
-
+// Aro
 function trazoAro(fin) {
+  // - 0.001  es para no dubuje el aro completo 
   if (fin - -medio_pi >= dos_pi - 0.001) {
     circle(portalX, portalY, portalTamano);
   } else {
@@ -467,25 +481,25 @@ function keyPressed() {
     }
   }
 }
-
+// Mouse para ver si el portal esta cerrado 
 function mousePressed() {
   if (portalEstado === "cerrado") {
     trazo = [{ x: mouseX, y: mouseY }];
     dibujando = true;
   }
 }
-
+// mouse dibuja el portal 
 function mouseDragged() {
   if (dibujando) {
     trazo.push({ x: mouseX, y: mouseY });
     crearChispa(mouseX, mouseY);
   }
 }
-
+// mouse deja el portal
 function mouseReleased() {
   if (!dibujando) return;
   dibujando = false;
-
+   // el trazo es un círculo y el portal esta cerrado abrirlo 
   let centro = esCirculo(trazo);
   if (centro && portalEstado === "cerrado") {
     let radio = portalObjetivo / 2;
@@ -498,11 +512,12 @@ function mouseReleased() {
   trazo = [];
 }
 
-// devuelve el centro {x, y} si el recorrido es un círculo, o null si no
+// Dibujo del circulo final 
 function esCirculo(puntos) {
+  // 20 puede ser modifcado para que el trazo sea mas o menos preciso
   if (puntos.length < 20) return null;
 
-  // 1. la caja que rodea el trazo
+  // 1. trazo
   let izq = puntos[0].x;
   let der = puntos[0].x;
   let arriba = puntos[0].y;
@@ -516,16 +531,17 @@ function esCirculo(puntos) {
   let ancho = der - izq;
   let alto = abajo - arriba;
 
-  // 2. tiene que ser grande y más o menos cuadrada
+  // 2. tiene que ser grande (60 son los pixles minimos y maximos)
   if (ancho < 60 || alto < 60) return null;
+  // 1.5 puede cambiar por otro valor para el trazo circular
   if (ancho > alto * 1.5 || alto > ancho * 1.5) return null;
-
+  
   // 3. centro y radio
   let cx = (izq + der) / 2;
   let cy = (arriba + abajo) / 2;
   let radio = (ancho + alto) / 4;
 
-  // 4. empezó y terminó cerca: cerró el círculo
+  // 4.  cerró el círculo
   let primero = puntos[0];
   let ultimo = puntos[puntos.length - 1];
   let margen = radio * 0.7;
@@ -538,7 +554,7 @@ function esCirculo(puntos) {
     return null;
   }
 
-  // 5. ningún punto pasa por el medio
+  // 5.Para que no haya puntos del ciruclo
   for (let p of puntos) {
     if (
       p.x > cx - radio * 0.5 &&
@@ -549,7 +565,6 @@ function esCirculo(puntos) {
       return null;
     }
   }
-
   return { x: cx, y: cy };
 }
 
